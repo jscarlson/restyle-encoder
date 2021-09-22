@@ -52,7 +52,7 @@ class pSp(nn.Module):
             self.decoder.load_state_dict(ckpt['g_ema'], strict=True)
             self.__load_latent_avg(ckpt, repeat=self.n_styles)
 
-    def forward(self, x, latent=None, resize=True, latent_mask=None, input_code=False, randomize_noise=True,
+    def forward(self, x, latent=None, resize=False, latent_mask=None, input_code=False, randomize_noise=True,
                 inject_latent=None, return_latents=False, alpha=None, average_code=False, input_is_full=False):
         if input_code:
             codes = x
