@@ -12,12 +12,15 @@ dataset_paths = {
 	'horse_test': '',
 
 	'afhq_wild_train': '',
-	'afhq_wild_test': ''
+	'afhq_wild_test': '',
+
+	'font_train': '/mnt/data01/AWS_S3_CONTAINER/personnel-records/1956/seg/firm/stylegan2_crops/pr',
+	'font_test': '/mnt/data01/AWS_S3_CONTAINER/personnel-records/1956/seg/firm/stylegan2_crops_sample/pr',
 }
 
 model_paths = {
 	'ir_se50': 'pretrained_models/model_ir_se50.pth',
-	'resnet34': 'pretrained_models/resnet34-333f7ec4.pth',
+	'resnet34': '/mnt/workspace/pretrained_models/resnet34-333f7ec4.pth',
 	'stylegan_ffhq': 'pretrained_models/stylegan2-ffhq-config-f.pt',
 	'stylegan_cars': 'pretrained_models/stylegan2-car-config-f.pt',
 	'stylegan_church': 'pretrained_models/stylegan2-church-config-f.pt',
@@ -29,5 +32,5 @@ model_paths = {
 	'mtcnn_pnet': 'pretrained_models/mtcnn/pnet.npy',
 	'mtcnn_rnet': 'pretrained_models/mtcnn/rnet.npy',
 	'mtcnn_onet': 'pretrained_models/mtcnn/onet.npy',
-	'moco': 'pretrained_models/moco_v2_800ep_pretrain.pth.tar'
+	'moco': '/mnt/workspace/pretrained_models/moco_v2_800ep_pretrain.pt' 
 }

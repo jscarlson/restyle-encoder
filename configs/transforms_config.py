@@ -60,3 +60,28 @@ class CarsEncodeTransforms(TransformsConfig):
 				transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])])
 		}
 		return transforms_dict
+
+
+class FontEncodeTransforms(TransformsConfig):
+
+	def __init__(self, opts):
+		super(FontEncodeTransforms, self).__init__(opts)
+
+	def get_transforms(self):
+		transforms_dict = {
+			'transform_gt_train': transforms.Compose([
+				transforms.Resize((64, 64)),
+				# transforms.RandomHorizontalFlip(0.5),
+				transforms.ToTensor(),
+				transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]),
+			'transform_source': None,
+			'transform_test': transforms.Compose([
+				transforms.Resize((64, 64)),
+				transforms.ToTensor(),
+				transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]),
+			'transform_inference': transforms.Compose([
+				transforms.Resize((64, 64)),
+				transforms.ToTensor(),
+				transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])])
+		}
+		return transforms_dict
