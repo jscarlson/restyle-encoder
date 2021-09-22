@@ -2,6 +2,13 @@ from PIL import Image
 import matplotlib.pyplot as plt
 
 
+def log_input_image(x, opts):
+	if opts.label_nc == 6:
+		return tensor2im(x)
+	else:
+		raise NotImplementedError
+
+
 def tensor2im(var):
 	var = var.cpu().detach().transpose(0, 2).transpose(0, 1).numpy()
 	var = ((var + 1) / 2)
