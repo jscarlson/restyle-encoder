@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 def log_input_image(x, opts):
-	if opts.label_nc == 6:
+	if opts.input_nc == 6:
 		return tensor2im(x)
 	else:
 		raise NotImplementedError
