@@ -29,6 +29,8 @@ class Coach:
 		self.device = 'cuda:0'
 		self.opts.device = self.device
 
+		self.wb_logger = WBLogger(self.opts)
+
 		# Initialize network
 		self.net = pSp(self.opts).to(self.device)
 
@@ -80,7 +82,6 @@ class Coach:
 		log_dir = os.path.join(opts.exp_dir, 'logs')
 		os.makedirs(log_dir, exist_ok=True)
 		self.logger = SummaryWriter(log_dir=log_dir)
-		self.wb_logger = WBLogger(self.opts)
 
 		# Initialize checkpoint dir
 		self.checkpoint_dir = os.path.join(opts.exp_dir, 'checkpoints')
