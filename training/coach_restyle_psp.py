@@ -17,6 +17,8 @@ from criteria.lpips.lpips import LPIPS
 from models.psp import pSp
 from training.ranger import Ranger
 
+from utils.wandb_utils import WBLogger
+
 
 class Coach:
 	def __init__(self, opts):
@@ -78,6 +80,7 @@ class Coach:
 		log_dir = os.path.join(opts.exp_dir, 'logs')
 		os.makedirs(log_dir, exist_ok=True)
 		self.logger = SummaryWriter(log_dir=log_dir)
+		self.wb_logger = WBLogger(self.opts)
 
 		# Initialize checkpoint dir
 		self.checkpoint_dir = os.path.join(opts.exp_dir, 'checkpoints')
@@ -131,6 +134,10 @@ class Coach:
 				if self.global_step % self.opts.board_interval == 0:
 					self.print_metrics(loss_dict, prefix='train')
 					self.log_metrics(loss_dict, prefix='train')
+
+				# Log images of first batch to wandb
+				if batch_idx == 0:
+					self.wb_logger.log_images_to_wandb(x, y, y_hats, id_logs, prefix="train", step=self.global_step, opts=self.opts)
 
 				# Validation related
 				val_loss_dict = None
@@ -187,6 +194,10 @@ class Coach:
 			# Logging related
 			self.parse_and_log_images(id_logs, x, y, y_hats, title='images/test', subscript='{:04d}'.format(batch_idx))
 
+			# Log images of first batch to wandb
+			if batch_idx == 0:
+				self.wb_logger.log_images_to_wandb(x, y, y_hats, id_logs, prefix="test", step=self.global_step, opts=self.opts)
+
 			# For first step just do sanity test on small amount of data
 			if self.global_step == 0 and batch_idx >= 4:
 				self.net.train()
@@ -236,6 +247,10 @@ class Coach:
 									 source_transform=transforms_dict['transform_source'],
 									 target_transform=transforms_dict['transform_test'],
 									 opts=self.opts)
+		
+		self.wb_logger.log_dataset_wandb(train_dataset, dataset_name="Train")
+		self.wb_logger.log_dataset_wandb(test_dataset, dataset_name="Test")
+
 		print("Number of training samples: {}".format(len(train_dataset)))
 		print("Number of test samples: {}".format(len(test_dataset)))
 		return train_dataset, test_dataset
@@ -273,6 +288,8 @@ class Coach:
 	def log_metrics(self, metrics_dict, prefix):
 		for key, value in metrics_dict.items():
 			self.logger.add_scalar('{}/{}'.format(prefix, key), value, self.global_step)
+		
+		self.wb_logger.log(prefix, metrics_dict, self.global_step)
 
 	def print_metrics(self, metrics_dict, prefix):
 		print('Metrics for {}, step {}'.format(prefix, self.global_step))
