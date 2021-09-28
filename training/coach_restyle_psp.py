@@ -137,7 +137,7 @@ class Coach:
 					self.log_metrics(loss_dict, prefix='train')
 
 				# Log images of first batch to wandb
-				if batch_idx % 5000 == 0:
+				if self.global_step % 5000 == 0:
 					self.wb_logger.log_images_to_wandb(x, y, y_hats, id_logs, prefix="train", step=self.global_step, opts=self.opts)
 
 				# Validation related
