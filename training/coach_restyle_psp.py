@@ -122,7 +122,6 @@ class Coach:
 			for batch_idx, batch in enumerate(self.train_dataloader):
 				self.optimizer.zero_grad()
 				x, y = batch
-				print(torch.equal(x, y))
 				x, y = x.to(self.device).float(), y.to(self.device).float()
 
 				y_hats, loss_dict, id_logs = self.perform_train_iteration_on_batch(x, y)
@@ -138,7 +137,7 @@ class Coach:
 					self.log_metrics(loss_dict, prefix='train')
 
 				# Log images of first batch to wandb
-				if batch_idx == 0:
+				if batch_idx % 5000 == 0:
 					self.wb_logger.log_images_to_wandb(x, y, y_hats, id_logs, prefix="train", step=self.global_step, opts=self.opts)
 
 				# Validation related
@@ -197,8 +196,7 @@ class Coach:
 			self.parse_and_log_images(id_logs, x, y, y_hats, title='images/test', subscript='{:04d}'.format(batch_idx))
 
 			# Log images of first batch to wandb
-			if batch_idx == 0:
-				self.wb_logger.log_images_to_wandb(x, y, y_hats, id_logs, prefix="test", step=self.global_step, opts=self.opts)
+			self.wb_logger.log_images_to_wandb(x, y, y_hats, id_logs, prefix="test", step=self.global_step, opts=self.opts)
 
 			# For first step just do sanity test on small amount of data
 			if self.global_step == 0 and batch_idx >= 4:

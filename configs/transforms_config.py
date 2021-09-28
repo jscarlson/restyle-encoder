@@ -71,10 +71,12 @@ class FontEncodeTransforms(TransformsConfig):
 		transforms_dict = {
 			'transform_gt_train': transforms.Compose([
 				transforms.Resize((64, 64)),
-				# transforms.RandomHorizontalFlip(0.5),
 				transforms.ToTensor(),
 				transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]),
-			'transform_source': None,
+			'transform_source': transforms.Compose([
+				transforms.Resize((64, 64)),
+				transforms.ToTensor(),
+				transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])]),
 			'transform_test': transforms.Compose([
 				transforms.Resize((64, 64)),
 				transforms.ToTensor(),
