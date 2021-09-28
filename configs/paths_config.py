@@ -19,6 +19,11 @@ dataset_paths = {
 
 	'font_gs_train': '/mnt/data01/AWS_S3_CONTAINER/personnel-records/1956/seg/firm/stylegan2_crops_grayscale/pr',
 	'font_gs_test': '/mnt/data01/AWS_S3_CONTAINER/personnel-records/1956/seg/firm/stylegan2_crops_grayscale_sample/pr',
+
+	'font_train_modern': '/mnt/data02/Japan/font_gen/paired_training_data/pr/labeled_validated_rendered_chars',
+	'font_test_modern': '/mnt/data02/Japan/font_gen/paired_training_data/pr/rendered_chars_for_overfitting',
+	'font_train_historical': '/mnt/data02/Japan/font_gen/paired_training_data/pr/labeled_validated_char_crops',
+	'font_test_historical': '/mnt/data02/Japan/font_gen/paired_training_data/pr/char_crops_for_overfitting',
 }
 
 model_paths = {

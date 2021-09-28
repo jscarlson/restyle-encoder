@@ -58,5 +58,12 @@ DATASETS = {
 		'train_target_root': dataset_paths['font_train'],
 		'test_source_root': dataset_paths['font_gs_test'],
 		'test_target_root': dataset_paths['font_test']
+	},
+	"font_encode": {
+		'transforms': transforms_config.FontEncodeTransforms,
+		'train_source_root': dataset_paths['font_train_modern'],
+		'train_target_root': dataset_paths['font_train_historical'],
+		'test_source_root': dataset_paths['font_test_modern'],
+		'test_target_root': dataset_paths['font_test_historical']
 	}
 }
