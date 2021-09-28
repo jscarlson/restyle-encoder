@@ -122,6 +122,7 @@ class Coach:
 			for batch_idx, batch in enumerate(self.train_dataloader):
 				self.optimizer.zero_grad()
 				x, y = batch
+				print(torch.equal(x, y))
 				x, y = x.to(self.device).float(), y.to(self.device).float()
 
 				y_hats, loss_dict, id_logs = self.perform_train_iteration_on_batch(x, y)

@@ -36,7 +36,7 @@ class WBLogger:
             column_names.append("ID Diff Output to Target")
         for i in range(len(x)):
             cur_im_data = [
-                wandb.Image(common.log_input_image(x[i], opts)),
+                wandb.Image(common.tensor2im(x[i])),
                 wandb.Image(common.tensor2im(y[i])),
                 wandb.Image(common.tensor2im(y_hat[i][-1][0])),
             ]
