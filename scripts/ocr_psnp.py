@@ -132,7 +132,7 @@ def main():
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
                     res = [np.array(input_im)]
-                    res = res + [np.array(Image.open(i)) for i in bimgn]
+                    res = res + [np.array(Image.open(i).convert('RGB')) for i in bimgn]
                     res = np.concatenate(res, axis=1)
                     Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
 
