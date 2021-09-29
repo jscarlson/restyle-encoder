@@ -115,7 +115,7 @@ def main():
                     verbose=opts.verbose
                 )
 
-                for bidx, clatent, bimgn in enumerate(zip(closest_latents, closet_im_names)):
+                for bidx, (clatent, bimgn) in enumerate(zip(closest_latents, closet_im_names)):
 
                     closest_input_cuda = torch.from_numpy(clatent).cuda().float()
                     result_neighbors, _ = run_on_batch(closest_input_cuda, net, opts, avg_image, just_decode=True)
