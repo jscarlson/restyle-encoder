@@ -89,7 +89,7 @@ def main():
             input_cuda = input_batch.cuda().float()
             tic = time.time()
 
-            result_batch, result_latents = run_on_batch(input_cuda, net, opts)
+            result_batch, result_latents = run_on_batch(input_cuda, net, opts, avg_image)
 
             if opts.save_latents:
 
@@ -112,7 +112,7 @@ def main():
                 for bidx, clatent in enumerate(closest_latents):
 
                     closest_input_cuda = torch.from_numpy(clatent).cuda().float()
-                    result_neighbors, _ = run_on_batch(closest_input_cuda, net, opts, input_code=True)
+                    result_neighbors, _ = run_on_batch(closest_input_cuda, net, opts, avg_image, just_decode=True)
 
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
@@ -205,22 +205,33 @@ def reshape_latent(latents, n_latents):
     )
 
 
-def run_on_batch(inputs, net, opts, avg_image):
+def run_on_batch(inputs, net, opts, avg_image, just_decode=False):
 
-    y_hat, latent = None, None
+    if not just_decode:
 
-    for iter in range(opts.n_iters_per_batch):
-        if iter == 0:
-            avg_image_for_batch = avg_image.unsqueeze(0).repeat(inputs.shape[0], 1, 1, 1)
-            x_input = torch.cat([inputs, avg_image_for_batch], dim=1)
-        else:
-            x_input = torch.cat([inputs, y_hat], dim=1)
+        y_hat, latent = None, None
 
-        y_hat, latent = net.forward(x_input,
-                                    latent=latent,
+        for iter in range(opts.n_iters_per_batch):
+
+            if iter == 0:
+                avg_image_for_batch = avg_image.unsqueeze(0).repeat(inputs.shape[0], 1, 1, 1)
+                x_input = torch.cat([inputs, avg_image_for_batch], dim=1)
+            else:
+                x_input = torch.cat([inputs, y_hat], dim=1)
+
+            y_hat, latent = net.forward(x_input,
+                                        latent=latent,
+                                        randomize_noise=False,
+                                        return_latents=True)
+
+    else:
+
+        y_hat, latent = net.forward(inputs,
+                                    latent=None,
+                                    input_code=True,
                                     randomize_noise=False,
-                                    return_latents=True,
-                                    resize=opts.resize_outputs)
+                                    return_latents=True)
+
 
     return y_hat, latent
 

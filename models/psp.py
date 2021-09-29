@@ -76,13 +76,8 @@ class pSp(nn.Module):
                 else:
                     codes[:, i] = 0
 
-        if average_code:
-            input_is_latent = True
-        else:
-            input_is_latent = (not input_code) or (input_is_full)
-
         images, result_latent = self.decoder([codes],
-                                             input_is_latent=input_is_latent,
+                                             input_is_latent=True,
                                              randomize_noise=randomize_noise,
                                              return_latents=return_latents)
 
