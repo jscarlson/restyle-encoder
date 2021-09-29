@@ -98,7 +98,7 @@ def main():
 
                 latent_array = result_latents.cpu().detach().numpy().astype('float32')
                 latents_save_path = os.path.join(out_path_latents, f'{global_i}.npy')
-                batch_input_paths[global_i] = list(input_paths)
+                batch_input_paths[str(global_i)] = list(input_paths)
                 """tensor2im(result_batch[2]).save('./debug-res.png')
                 Image.open(batch_input_paths[global_i][2]).save('./debug-path.png')
                 assert all(tensor2im(result_batch[x]) == Image.open(batch_input_paths[global_i][x]) for x in range(len(input_paths)))"""
