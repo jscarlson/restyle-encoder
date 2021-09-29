@@ -80,6 +80,12 @@ def main():
         lookup_arrays = np.load(os.path.join(opts.faiss_dir, 'lookup_array.npy'), mmap_mode='r')
         with open(os.path.join(opts.faiss_dir, 'im_names.txt')) as f:
             im_names = f.read().split()
+
+        arrayim = Image.fromarray(lookup_arrays[3,:,:])
+        fileim = Image.open(im_names[3])
+        arrayim.save("./debug-sample-array.png")
+        fileim.save("./debug-sample-file.png")
+        assert arrayim == fileim
         
     # inference
     for input_batch, input_paths in tqdm(dataloader):
