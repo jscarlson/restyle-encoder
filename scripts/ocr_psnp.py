@@ -138,7 +138,7 @@ def main():
                     # ocr recog save
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
-                    input_im.save(os.path.join(out_path_coupled, f"ocr_recog_{extract_char_from_im_name(bimgn[0])}"))
+                    input_im.save(os.path.join(out_path_coupled, f"ocr_recog_{extract_char_from_im_name(bimgn[0])}.png"))
 
                     # ocr results
                     ocr_chars = [extract_char_from_im_name(x) for x in bimgn]
