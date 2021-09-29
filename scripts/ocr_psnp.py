@@ -72,6 +72,7 @@ def main():
     # inference setup
     global_i = 0
     global_time = []
+    all_input_paths = []
 
     # read in latents
     if not opts.save_latents:
@@ -81,10 +82,10 @@ def main():
     # inference
     for input_batch, input_paths in tqdm(dataloader):
 
-        print(input_paths)
-
         if global_i >= opts.n_images:
             break
+
+        all_input_paths.extend(input_paths)
 
         with torch.no_grad():
 
@@ -125,24 +126,6 @@ def main():
 
             toc = time.time()
             global_time.append(toc - tic)
-
-        if opts.save_images and opts.save_latents:
-
-            for i in range(opts.test_batch_size):
-
-                result = tensor2im(result_batch[i])
-                im_path = input_paths[i]
-
-                if opts.couple_outputs:
-                    input_im = tensor2im(input_batch[i])
-                    resize_amount = (256, 256) if opts.resize_outputs else (opts.output_size, opts.output_size)
-                    res = np.concatenate(
-                        [np.array(input_im.resize(resize_amount)),
-                        np.array(result.resize(resize_amount))], axis=1)
-                    Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
-
-                im_save_path = os.path.join(out_path_results, os.path.basename(im_path))
-                Image.fromarray(np.array(result)).save(im_save_path)
 
         global_i += opts.test_batch_size
 
@@ -236,7 +219,6 @@ def run_on_batch(inputs, net, opts, avg_image, just_decode=False):
 
 
     return y_hat, latent
-
 
 
 if __name__ == '__main__':
