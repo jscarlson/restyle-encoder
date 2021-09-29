@@ -99,9 +99,6 @@ def main():
                 latent_array = result_latents.cpu().detach().numpy().astype('float32')
                 latents_save_path = os.path.join(out_path_latents, f'{global_i}.npy')
                 batch_input_paths[str(global_i)] = list(input_paths)
-                """tensor2im(result_batch[2]).save('./debug-res.png')
-                Image.open(batch_input_paths[global_i][2]).save('./debug-path.png')
-                assert all(tensor2im(result_batch[x]) == Image.open(batch_input_paths[global_i][x]) for x in range(len(input_paths)))"""
                 with open(latents_save_path, 'wb') as f:
                     np.save(f, latent_array)
                 
@@ -137,6 +134,11 @@ def main():
                     res = res + [np.array(Image.open(i).convert('RGB')) for i in bimgn]
                     res = np.concatenate(res, axis=1)
                     Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
+
+                    # ocr recog save
+                    im_path = input_paths[bidx]
+                    input_im = tensor2im(input_batch[bidx])
+                    input_im.save(os.path.join(out_path_coupled, f"ocr_recog_{extract_char_from_im_name(bimgn[0])}"))
 
                     # ocr results
                     ocr_chars = [extract_char_from_im_name(x) for x in bimgn]
@@ -206,9 +208,6 @@ def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neigh
     # return closest
     closest_indices = np.apply_along_axis(lambda x: x[:n_neighbors], axis=1, arr=I)
     closest_codes = [all_arrays[cidx,:,:] for cidx in closest_indices]
-    """print(closest_indices)
-    print(all_arrays.shape)
-    print(len(all_im_names))"""
     closest_im_names = [[all_im_names[i]  for i in cidx] for cidx in closest_indices]
 
     return closest_codes, closest_im_names
