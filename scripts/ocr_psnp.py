@@ -80,6 +80,7 @@ def main():
         lookup_arrays = np.load(os.path.join(opts.faiss_dir, 'lookup_array.npy'), mmap_mode='r')
         with open(os.path.join(opts.faiss_dir, 'im_names.txt')) as f:
             im_names = f.read().split()
+            print(im_names)
         
     # inference
     for input_batch, input_paths in tqdm(dataloader):
