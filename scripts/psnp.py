@@ -81,8 +81,6 @@ def main():
     # inference
     for input_batch, input_paths in tqdm(dataloader):
 
-        print(input_paths)
-
         if global_i >= opts.n_images:
             break
 

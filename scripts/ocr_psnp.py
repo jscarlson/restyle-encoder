@@ -78,6 +78,8 @@ def main():
     if not opts.save_latents:
         index = faiss.read_index(os.path.join(opts.faiss_dir, 'index.bin'))
         lookup_arrays = np.load(os.path.join(opts.faiss_dir, 'lookup_array.npy'), mmap_mode='r')
+        with open(os.path.join(opts.faiss_dir, 'im_names.txt')) as f:
+            im_names = f.read().split()
         
     # inference
     for input_batch, input_paths in tqdm(dataloader):
@@ -85,14 +87,14 @@ def main():
         if global_i >= opts.n_images:
             break
 
-        all_input_paths.extend(input_paths)
+        all_input_paths.extend(list(input_paths))
 
         with torch.no_grad():
 
             input_cuda = input_batch.cuda().float()
             tic = time.time()
 
-            result_batch, result_latents = run_on_batch(input_cuda, net, opts, avg_image)
+            _, result_latents = run_on_batch(input_cuda, net, opts, avg_image)
 
             if opts.save_latents:
 
@@ -103,26 +105,35 @@ def main():
                 
             else:
                 
-                closest_latents = run_faiss(
+                closest_latents, closet_im_names = run_faiss(
                     result_latents, 
                     index, 
-                    lookup_arrays, 
+                    lookup_arrays,
+                    im_names,
                     n_latents=opts.n_latents, 
                     n_neighbors=opts.n_neighbors,
                     verbose=opts.verbose
                 )
 
-                for bidx, clatent in enumerate(closest_latents):
+                for bidx, clatent, bimgn in enumerate(zip(closest_latents, closet_im_names)):
 
                     closest_input_cuda = torch.from_numpy(clatent).cuda().float()
                     result_neighbors, _ = run_on_batch(closest_input_cuda, net, opts, avg_image, just_decode=True)
 
+                    # viz results
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
                     res = [np.array(input_im)]
                     res = res + [np.array(tensor2im(result_neighbors[i])) for i in range(opts.n_neighbors)]
                     res = np.concatenate(res, axis=1)
                     Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
+
+                    # ocr results
+                    ocr_chars = [x[0] for x in bimgn]
+                    print(f"All recog chars: {ocr_chars}")
+                    ocr_recog_char = max(set(ocr_chars), key=ocr_chars.count)
+                    print(f"OCR recognition: {ocr_recog_char}")
+
 
             toc = time.time()
             global_time.append(toc - tic)
@@ -135,7 +146,9 @@ def main():
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:
             np.save(f, lookup_arrays)
-        
+        with open(os.path.join(opts.faiss_dir, 'im_names.txt', 'w'), 'w') as f:
+            f.write('\n'.join(all_input_paths))
+
     # create stats
     stats_path = os.path.join(opts.exp_dir, 'stats.txt')
     result_str = 'Runtime {:.4f}+-{:.4f}'.format(np.mean(global_time), np.std(global_time))
@@ -166,7 +179,7 @@ def setup_faiss(opts, n_latents, n_imgs, dim=512, wplus=10):
     return index, all_arrays
 
 
-def run_faiss(query_latents, index, all_arrays, n_latents, n_neighbors=5, verbose=True):
+def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True):
     
     # search index
     reshaped_query_latents = reshape_latent(query_latents, n_latents)
@@ -178,8 +191,9 @@ def run_faiss(query_latents, index, all_arrays, n_latents, n_neighbors=5, verbos
     # return closest
     closest_indices = np.apply_along_axis(lambda x: x[:n_neighbors], axis=1, arr=I)
     closest_codes = [all_arrays[cidx,:,:] for cidx in closest_indices]
+    closest_im_names = [[all_im_names[i]  for i in cidx] for cidx in closest_indices]
 
-    return closest_codes
+    return closest_codes, closest_im_names
 
 
 def reshape_latent(latents, n_latents):
