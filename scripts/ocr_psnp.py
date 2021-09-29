@@ -206,9 +206,9 @@ def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neigh
     # return closest
     closest_indices = np.apply_along_axis(lambda x: x[:n_neighbors], axis=1, arr=I)
     closest_codes = [all_arrays[cidx,:,:] for cidx in closest_indices]
-    print(closest_indices)
+    """print(closest_indices)
     print(all_arrays.shape)
-    print(len(all_im_names))
+    print(len(all_im_names))"""
     closest_im_names = [[all_im_names[i]  for i in cidx] for cidx in closest_indices]
 
     return closest_codes, closest_im_names
