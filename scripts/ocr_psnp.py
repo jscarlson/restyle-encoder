@@ -72,7 +72,7 @@ def main():
     # inference setup
     global_i = 0
     global_time = []
-    all_input_paths = []
+    batch_input_paths = {}
 
     # read in latents
     if not opts.save_latents:
@@ -80,20 +80,12 @@ def main():
         lookup_arrays = np.load(os.path.join(opts.faiss_dir, 'lookup_array.npy'), mmap_mode='r')
         with open(os.path.join(opts.faiss_dir, 'im_names.txt')) as f:
             im_names = f.read().split()
-
-        arrayim = Image.fromarray(lookup_arrays[3,:,:])
-        fileim = Image.open(im_names[3])
-        arrayim.save("./debug-sample-array.png")
-        fileim.save("./debug-sample-file.png")
-        assert arrayim == fileim
         
     # inference
     for input_batch, input_paths in tqdm(dataloader):
 
         if global_i >= opts.n_images:
             break
-
-        all_input_paths.extend(list(input_paths))
 
         with torch.no_grad():
 
@@ -106,6 +98,7 @@ def main():
 
                 latent_array = result_latents.cpu().detach().numpy().astype('float32')
                 latents_save_path = os.path.join(out_path_latents, f'{global_i}.npy')
+                batch_input_paths[global_i] = list(input_paths)
                 with open(latents_save_path, 'wb') as f:
                     np.save(f, latent_array)
                 
@@ -153,12 +146,12 @@ def main():
 
     # faiss index creation
     if opts.save_latents:
-        index, lookup_arrays = setup_faiss(opts, n_latents=opts.n_latents, n_imgs=global_i)
+        index, lookup_arrays, ord_batch_paths = setup_faiss(opts, batch_input_paths, n_latents=opts.n_latents, n_imgs=global_i)
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:
             np.save(f, lookup_arrays)
         with open(os.path.join(opts.faiss_dir, 'im_names.txt'), 'w') as f:
-            f.write('\n'.join(all_input_paths))
+            f.write('\n'.join(ord_batch_paths))
 
     # create stats
     stats_path = os.path.join(opts.exp_dir, 'stats.txt')
@@ -168,26 +161,34 @@ def main():
         f.write(result_str)
 
 
-def setup_faiss(opts, n_latents, n_imgs, dim=512, wplus=10):
+def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
 
     # create index
     index = faiss.IndexFlatIP(dim)
     all_arrays = np.empty((n_imgs, wplus, dim), dtype=np.float32)
+    all_paths = []
 
     # load index
     root_dir = os.path.join(opts.faiss_dir, 'inference_latents')
     idx = 0
+
     for filename in tqdm(os.listdir(root_dir)):
+
+        paths = batch_im_paths[os.path.splitext(filename)[0]]
+        all_paths.extend(paths)
+
         saved_latents = np.load(os.path.join(root_dir, filename))
         all_arrays[idx:idx+opts.test_batch_size,:,:] = saved_latents
+
         reshaped_latents = reshape_latent(saved_latents, n_latents)
         faiss.normalize_L2(reshaped_latents)
         index.add(reshaped_latents)
+
         idx += opts.test_batch_size
 
     print(f'Total indices {index.ntotal}')
 
-    return index, all_arrays
+    return index, all_arrays, paths
 
 
 def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True):
