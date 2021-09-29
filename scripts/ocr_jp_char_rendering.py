@@ -71,6 +71,6 @@ if __name__ == '__main__':
     uni_dec = jp_unicode_decimals()
 
     for idx, i in tqdm(enumerate(uni_dec), total=len(uni_dec)):
-        draw_single_char(chr(i), digital_font, 256)\
-            .resize((64,64))\
-                .save(os.path.join(save_path, f'{chr(i)}_{idx}.png'))
+        render_char = draw_single_char(chr(i), digital_font, 256)
+        if render_char is not None:
+            render_char.resize((64,64)).save(os.path.join(save_path, f'{chr(i)}_{idx}.png'))
