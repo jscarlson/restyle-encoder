@@ -35,6 +35,14 @@ class TestOptions:
                                  help='Path to encoder used to iteratively translate images following '
                                       'model 1\'s initialization.')
 
+        # PSNP
+		self.parser.add_argument('--faiss_dir', type=str, default=None, required=True, help='Path to NPY files for FAISS')
+		self.parser.add_argument('--save_latents', action='store_true', help='Save latents for nearest neighbors comparisons')
+		self.parser.add_argument('--save_images', action='store_true', help='Save images')
+		self.parser.add_argument('--n_latents', default=5, type=int, help='Number of W+ vectors to concat for FAISS')
+		self.parser.add_argument('--n_neighbors', default=10, type=int, help='Number of nearest neighbors to visualize')
+		self.parser.add_argument('--verbose', action='store_true', default=False, help='Be... verbose')
+
         # arguments for editing
         self.parser.add_argument('--edit_directions', type=str, default='age,smile,pose',
                                  help='comma-separated list of which edit directions top perform.')
