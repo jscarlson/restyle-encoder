@@ -129,10 +129,11 @@ def main():
                     Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
 
                     # ocr results
-                    ocr_chars = [x[0] for x in bimgn]
+                    ocr_chars = [os.path.basename(x)[0] for x in bimgn]
                     print(f"All recog chars: {ocr_chars}")
                     ocr_recog_char = max(set(ocr_chars), key=ocr_chars.count)
                     print(f"OCR recognition: {ocr_recog_char}")
+                    print("***")
 
 
             toc = time.time()
