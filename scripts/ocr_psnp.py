@@ -146,7 +146,7 @@ def main():
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:
             np.save(f, lookup_arrays)
-        with open(os.path.join(opts.faiss_dir, 'im_names.txt', 'w'), 'w') as f:
+        with open(os.path.join(opts.faiss_dir, 'im_names.txt'), 'w') as f:
             f.write('\n'.join(all_input_paths))
 
     # create stats
