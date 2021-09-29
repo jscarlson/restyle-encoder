@@ -120,7 +120,7 @@ def main():
                     closest_input_cuda = torch.from_numpy(clatent).cuda().float()
                     result_neighbors, _ = run_on_batch(closest_input_cuda, net, opts, avg_image, just_decode=True)
 
-                    # viz results
+                    # viz results encoded
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
                     res = [np.array(input_im)]
@@ -128,13 +128,17 @@ def main():
                     res = np.concatenate(res, axis=1)
                     Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
 
-                    # ocr results
-                    ocr_chars = [os.path.basename(x)[0] for x in bimgn]
-                    print(f"All recog chars: {ocr_chars}")
-                    ocr_recog_char = max(set(ocr_chars), key=ocr_chars.count)
-                    print(f"OCR recognition: {ocr_recog_char}")
-                    print("***")
+                    # viz results wrt src file
+                    im_path = input_paths[bidx]
+                    input_im = tensor2im(input_batch[bidx])
+                    res = [np.array(input_im)]
+                    res = res + [np.array(Image.open(i)) for i in bimgn]
+                    res = np.concatenate(res, axis=1)
+                    Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
 
+                    # ocr results
+                    ocr_chars = [extract_char_from_im_name(x) for x in bimgn]
+                    print(f"Recog char: {ocr_chars[0]}")
 
             toc = time.time()
             global_time.append(toc - tic)
@@ -234,6 +238,10 @@ def run_on_batch(inputs, net, opts, avg_image, just_decode=False):
 
 
     return y_hat, latent
+
+
+def extract_char_from_im_name(imn):
+    return os.path.basename(imn)[0]
 
 
 if __name__ == '__main__':
