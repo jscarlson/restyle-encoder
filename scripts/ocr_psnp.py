@@ -92,13 +92,14 @@ def main():
             input_cuda = input_batch.cuda().float()
             tic = time.time()
 
-            _, result_latents = run_on_batch(input_cuda, net, opts, avg_image)
+            result_batch, result_latents = run_on_batch(input_cuda, net, opts, avg_image)
 
             if opts.save_latents:
 
                 latent_array = result_latents.cpu().detach().numpy().astype('float32')
                 latents_save_path = os.path.join(out_path_latents, f'{global_i}.npy')
                 batch_input_paths[global_i] = list(input_paths)
+                assert all(tensor2im(result_batch[x]) == Image.open(batch_input_paths[global_i][x]) for x in range(len(input_paths)))
                 with open(latents_save_path, 'wb') as f:
                     np.save(f, latent_array)
                 
