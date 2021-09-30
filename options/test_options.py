@@ -42,6 +42,7 @@ class TestOptions:
         self.parser.add_argument('--n_latents', default=5, type=int, help='Number of W+ vectors to concat for FAISS')
         self.parser.add_argument('--n_neighbors', default=10, type=int, help='Number of nearest neighbors to visualize')
         self.parser.add_argument('--verbose', action='store_true', default=False, help='Be... verbose')
+        self.parser.add_argument('--eval_data', action='store_true', default=False, help='Evaluate OCR accuracy using input data labels')
 
         # arguments for editing
         self.parser.add_argument('--edit_directions', type=str, default='age,smile,pose',

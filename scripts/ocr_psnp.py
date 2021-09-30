@@ -80,6 +80,12 @@ def main():
         lookup_arrays = np.load(os.path.join(opts.faiss_dir, 'lookup_array.npy'), mmap_mode='r')
         with open(os.path.join(opts.faiss_dir, 'im_names.txt')) as f:
             im_names = f.read().split()
+
+    # setup eval
+    if opts.eval_data:
+        top1_acc = []
+        top5_acc = []
+        top10_acc = []
         
     # inference
     for input_batch, input_paths in tqdm(dataloader):
@@ -135,13 +141,20 @@ def main():
                     Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
 
                     # ocr top1 save
+                    top_char = extract_char_from_im_name(bimgn[0])
                     input_im.save(os.path.join(out_path_coupled, 
-                        f"top1_{extract_char_from_im_name(bimgn[0])}.png"))
+                        f"top1_{top_char}.png"))
 
                     # ocr scheme save
                     ocr_recog_chars = [extract_char_from_im_name(imgn) for imgn in bimgn]
                     input_im.save(os.path.join(out_path_coupled, 
                         f"nnscore_{nn_scoring(ocr_recog_chars)}.png"))
+
+                    # eval
+                    if opts.eval_data:
+                        top1_acc.append(top_char == extract_char_from_im_name(im_path))
+                        top5_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars[:5])
+                        top10_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars)
 
             toc = time.time()
             global_time.append(toc - tic)
@@ -163,6 +176,13 @@ def main():
     print(result_str)
     with open(stats_path, 'w') as f:
         f.write(result_str)
+    if opts.eval_data:
+        top1_acc = sum(top1_acc)/len(top1_acc)
+        top5_acc = sum(top5_acc)/len(top5_acc)
+        top10_acc = sum(top10_acc)/len(top10_acc)
+        print(f"Top-1 accuracy is {top1_acc}")
+        print(f"Top-5 accuracy is {top5_acc}")
+        print(f"Top-10 accuracy is {top10_acc}")
 
 
 def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
