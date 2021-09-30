@@ -62,15 +62,21 @@ def jp_unicode_decimals():
 
 if __name__ == '__main__':
 
-    font_path = '/mnt/data01/otf/NotoSerifCJKjp-Regular.otf'
-    save_path = '/mnt/data01/rendered_chars/all_chars_NotoSerifCJKjp-Regular'
-
-    digital_font = ImageFont.truetype(font_path, size=256)
+    font_paths = (
+        '/mnt/data01/otf/NotoSerifCJKjp-Regular.otf',
+        '/mnt/data01/ttf/HinaMincho-Regular.ttf',
+        '/mnt/data01/ttf/NewTegomin-Regular.ttf',
+    )
+    save_path = '/mnt/data01/rendered_chars/all_chars_many_renders'
     os.makedirs(save_path, exist_ok=True)
 
     uni_dec = jp_unicode_decimals()
 
-    for idx, i in tqdm(enumerate(uni_dec), total=len(uni_dec)):
-        render_char = draw_single_char(chr(i), digital_font, 256)
-        if render_char is not None:
-            render_char.resize((64,64)).save(os.path.join(save_path, f'{chr(i)}_{idx}.png'))
+    idx = 0
+    for font_path in font_paths:
+        digital_font = ImageFont.truetype(font_path, size=256)
+        for i in tqdm(uni_dec, total=len(uni_dec)):
+            render_char = draw_single_char(chr(i), digital_font, 256)
+            if render_char is not None:
+                render_char.resize((64,64)).save(os.path.join(save_path, f'{chr(i)}_{idx}.png'))
+                idx += 1
