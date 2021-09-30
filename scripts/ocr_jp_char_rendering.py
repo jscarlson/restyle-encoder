@@ -79,7 +79,8 @@ def filter_recurring_hash(charset, font, canvas_size):
     hash_count = defaultdict(int)
     for c in sample:
         img = draw_single_char(c, font, canvas_size)
-        hash_count[hash(img.tobytes())] += 1
+        if img is not None:
+            hash_count[hash(img.tobytes())] += 1
     recurring_hashes = filter(lambda d: d[1] > 2, hash_count.items())
     return [rh[0] for rh in recurring_hashes]
 
