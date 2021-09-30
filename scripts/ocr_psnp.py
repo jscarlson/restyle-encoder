@@ -204,7 +204,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
         saved_latents = np.load(os.path.join(root_dir, filename))
         all_arrays[idx:idx+opts.test_batch_size,:,:] = saved_latents
 
-        reshaped_latents = reshape_latent(saved_latents, n_latents)
+        reshaped_latents = reshape_latent(saved_latents, n_latents, np.mean)
         faiss.normalize_L2(reshaped_latents)
         index.add(reshaped_latents)
 
@@ -218,7 +218,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
 def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True):
     
     # search index
-    reshaped_query_latents = reshape_latent(query_latents, n_latents)
+    reshaped_query_latents = reshape_latent(query_latents, n_latents, np.mean)
     D, I = index.search(reshaped_query_latents, n_neighbors)
     if verbose:
         print(I)
@@ -232,11 +232,11 @@ def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neigh
     return closest_codes, closest_im_names
 
 
-def reshape_latent(latents, n_latents):
+def reshape_latent(latents, n_latents, agg_func):
     if torch.is_tensor(latents):
         latents = latents.cpu().detach().numpy()
     return np.ascontiguousarray(
-        np.sum(latents[:,:n_latents,:], axis=1).reshape((latents.shape[0], -1))
+        agg_func(latents[:,:n_latents,:], axis=1).reshape((latents.shape[0], -1))
     )
 
 
