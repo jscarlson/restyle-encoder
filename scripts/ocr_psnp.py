@@ -119,30 +119,29 @@ def main():
                     closest_input_cuda = torch.from_numpy(clatent).cuda().float()
                     result_neighbors, _ = run_on_batch(closest_input_cuda, net, opts, avg_image, just_decode=True)
 
-                    # viz results encoded
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
+
+                    # viz results encoded
                     res = [np.array(input_im)]
                     res = res + [np.array(tensor2im(result_neighbors[i])) for i in range(opts.n_neighbors)]
                     res = np.concatenate(res, axis=1)
                     Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
 
                     # viz results wrt src file
-                    im_path = input_paths[bidx]
-                    input_im = tensor2im(input_batch[bidx])
                     res = [np.array(input_im)]
                     res = res + [np.array(Image.open(i).convert('RGB')) for i in bimgn]
                     res = np.concatenate(res, axis=1)
                     Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
 
-                    # ocr recog save
-                    im_path = input_paths[bidx]
-                    input_im = tensor2im(input_batch[bidx])
+                    # ocr top1 save
                     input_im.save(os.path.join(out_path_coupled, 
                         f"top1_{extract_char_from_im_name(bimgn[0])}.png"))
-                    ocr_recog_chars = [extract_char_from_im_name(imgn) for imgn in bimgn] 
+
+                    # ocr scheme save
+                    ocr_recog_chars = [extract_char_from_im_name(imgn) for imgn in bimgn]
                     input_im.save(os.path.join(out_path_coupled, 
-                        f"mode_{max(set(ocr_recog_chars), key=ocr_recog_chars.count)}.png"))
+                        f"nnscore_{nn_scoring(ocr_recog_chars)}.png"))
 
             toc = time.time()
             global_time.append(toc - tic)
@@ -254,6 +253,12 @@ def run_on_batch(inputs, net, opts, avg_image, just_decode=False):
 
 def extract_char_from_im_name(imn):
     return os.path.basename(imn)[0]
+
+
+def nn_scoring(neighbors):
+    neighbors_set = list(set(neighbors))
+    scores = [sum([len(neighbors) - idx for idx, x in enumerate(neighbors) if x == s]) for s in neighbors_set]
+    return max(neighbors_set, key=lambda x: scores[neighbors_set.index(x)])
 
 
 if __name__ == '__main__':
