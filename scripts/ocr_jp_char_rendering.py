@@ -7,6 +7,10 @@ import numpy as np
 from torchvision import transforms
 from torch import nn
 
+from fontTools.ttLib import TTFont
+from itertools import chain
+from fontTools.unicode import Unicode
+
 
 def draw_single_char(ch, font, canvas_size, x_offset=0, y_offset=0):
     img = Image.new("L", (canvas_size * 2, canvas_size * 2), 0)
@@ -60,6 +64,13 @@ def jp_unicode_decimals():
     return unicode_dec
 
 
+def get_unicode_coverage_from_ttf(ttf_path):
+    with TTFont(ttf_path, 0, allowVID=0, ignoreDecompileErrors=True, fontNumber=-1) as ttf:
+        chars = chain.from_iterable([y + (Unicode[y[0]],) for y in x.cmap.items()] for x in ttf["cmap"].tables)
+        chars_dec = [x[0] for x in chars]
+        return chars_dec, [chr(x) for x in chars_dec]
+
+
 if __name__ == '__main__':
 
     font_paths = (
@@ -74,9 +85,13 @@ if __name__ == '__main__':
 
     idx = 0
     for font_path in font_paths:
+
         digital_font = ImageFont.truetype(font_path, size=256)
-        for i in tqdm(uni_dec, total=len(uni_dec)):
-            render_char = draw_single_char(chr(i), digital_font, 256)
+        _, covered_chars = get_unicode_coverage_from_ttf(font_path)
+        covered_chars_kanji_plus = [c for c in covered_chars if ord(c) in uni_dec]
+
+        for i in tqdm(covered_chars_kanji_plus, total=len(covered_chars_kanji_plus)):
+            render_char = draw_single_char(i, digital_font, 256)
             if render_char is not None:
                 render_char.resize((64,64)).save(os.path.join(save_path, f'{chr(i)}_{idx}.png'))
                 idx += 1
