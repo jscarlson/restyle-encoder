@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
         digital_font = ImageFont.truetype(font_path, size=256)
         _, covered_chars = get_unicode_coverage_from_ttf(font_path)
-        covered_chars_kanji_plus = [c for c in covered_chars if ord(c) in uni_dec]
+        covered_chars_kanji_plus = list(set([c for c in covered_chars if ord(c) in uni_dec]))
 
         filter_hashes = set(filter_recurring_hash(covered_chars_kanji_plus, digital_font, 256))
         print("filter hashes -> %s" % (",".join([str(h) for h in filter_hashes])))
