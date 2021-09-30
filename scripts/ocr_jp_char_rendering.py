@@ -10,6 +10,7 @@ from torch import nn
 from fontTools.ttLib import TTFont
 from itertools import chain
 from fontTools.unicode import Unicode
+from collections import defaultdict
 
 
 def draw_single_char(ch, font, canvas_size, x_offset=0, y_offset=0):
@@ -71,6 +72,18 @@ def get_unicode_coverage_from_ttf(ttf_path):
         return chars_dec, [chr(x) for x in chars_dec]
 
 
+def filter_recurring_hash(charset, font, canvas_size):
+    _charset = charset.copy()
+    np.random.shuffle(_charset)
+    sample = _charset[:2000]
+    hash_count = defaultdict(int)
+    for c in sample:
+        img = draw_single_char(c, font, canvas_size)
+        hash_count[hash(img.tobytes())] += 1
+    recurring_hashes = filter(lambda d: d[1] > 2, hash_count.items())
+    return [rh[0] for rh in recurring_hashes]
+
+
 if __name__ == '__main__':
 
     font_paths = (
@@ -90,8 +103,15 @@ if __name__ == '__main__':
         _, covered_chars = get_unicode_coverage_from_ttf(font_path)
         covered_chars_kanji_plus = [c for c in covered_chars if ord(c) in uni_dec]
 
+        filter_hashes = set(filter_recurring_hash(covered_chars_kanji_plus, digital_font, 256))
+        print("filter hashes -> %s" % (",".join([str(h) for h in filter_hashes])))
+
         for c in tqdm(covered_chars_kanji_plus, total=len(covered_chars_kanji_plus)):
             render_char = draw_single_char(c, digital_font, 256)
-            if render_char is not None:
-                render_char.resize((64,64)).save(os.path.join(save_path, f'{c}_{idx}.png'))
-                idx += 1
+            if render_char is None:
+                continue
+            render_hash = hash(render_char.tobytes())
+            if render_hash in filter_hashes:
+                continue
+            render_char.resize((64,64)).save(os.path.join(save_path, f'{c}_{idx}.png'))
+            idx += 1
