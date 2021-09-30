@@ -90,8 +90,8 @@ if __name__ == '__main__':
         _, covered_chars = get_unicode_coverage_from_ttf(font_path)
         covered_chars_kanji_plus = [c for c in covered_chars if ord(c) in uni_dec]
 
-        for i in tqdm(covered_chars_kanji_plus, total=len(covered_chars_kanji_plus)):
-            render_char = draw_single_char(i, digital_font, 256)
+        for c in tqdm(covered_chars_kanji_plus, total=len(covered_chars_kanji_plus)):
+            render_char = draw_single_char(c, digital_font, 256)
             if render_char is not None:
-                render_char.resize((64,64)).save(os.path.join(save_path, f'{chr(i)}_{idx}.png'))
+                render_char.resize((64,64)).save(os.path.join(save_path, f'{c}_{idx}.png'))
                 idx += 1
