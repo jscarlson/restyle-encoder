@@ -92,10 +92,12 @@ if __name__ == '__main__':
         '/mnt/data01/ttf/HinaMincho-Regular.ttf',
         '/mnt/data01/ttf/NewTegomin-Regular.ttf',
     )
-    save_path = '/mnt/data01/rendered_chars/all_chars_many_renders'
+    save_path = '/mnt/data01/rendered_chars/joyo_chars_many_renders'
     os.makedirs(save_path, exist_ok=True)
 
-    uni_dec = jp_unicode_decimals()
+    # uni_dec = jp_unicode_decimals()
+    with open("/mnt/data01/charsets/joyo_kanji.txt") as f:
+        uni_dec = f.read().split()
 
     idx = 0
     for font_path in font_paths:
