@@ -97,7 +97,7 @@ if __name__ == '__main__':
 
     # uni_dec = jp_unicode_decimals()
     with open("/mnt/data01/charsets/joyo_kanji.txt") as f:
-        uni_dec = f.read().split()
+        uni_dec = [ord(c) for c in f.read().split()]
 
     idx = 0
     for font_path in font_paths:
