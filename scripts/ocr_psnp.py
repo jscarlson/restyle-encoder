@@ -21,6 +21,7 @@ from models.e4e import e4e
 from utils.model_utils import ENCODER_TYPES
 from utils.common import tensor2im
 from utils.inference_utils import get_average_image
+from utils.lm_utils import *
 
 
 def main():
@@ -80,6 +81,11 @@ def main():
         lookup_arrays = np.load(os.path.join(opts.faiss_dir, 'lookup_array.npy'), mmap_mode='r')
         with open(os.path.join(opts.faiss_dir, 'im_names.txt')) as f:
             im_names = f.read().split()
+        
+    # read in lm
+    if not opts.save_latents:
+        bertjapanese = AutoModelForMaskedLM.from_pretrained('cl-tohoku/bert-base-japanese-char-v2')
+        bertjapanesetokenizer = BertJapaneseTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char-v2")
 
     # setup eval
     if opts.eval_data:
@@ -120,6 +126,8 @@ def main():
                     verbose=opts.verbose
                 )
 
+                sequence_ocr_recog_chars = []
+
                 for bidx, (clatent, bimgn) in enumerate(zip(closest_latents, closet_im_names)):
 
                     closest_input_cuda = torch.from_numpy(clatent).cuda().float()
@@ -128,33 +136,19 @@ def main():
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
 
-                    # viz results encoded
-                    res = [np.array(input_im)]
-                    res = res + [np.array(tensor2im(result_neighbors[i])) for i in range(opts.n_neighbors)]
-                    res = np.concatenate(res, axis=1)
-                    Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
+                    viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn)
 
-                    # viz results wrt src file
-                    res = [np.array(input_im)]
-                    res = res + [np.array(Image.open(i).convert('RGB')) for i in bimgn]
-                    res = np.concatenate(res, axis=1)
-                    Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
-
-                    # ocr top1 save
-                    top_char = extract_char_from_im_name(bimgn[0])
-                    input_im.save(os.path.join(out_path_coupled, 
-                        f"top1_{top_char}.png"))
-
-                    # ocr scheme save
                     ocr_recog_chars = [extract_char_from_im_name(imgn) for imgn in bimgn]
-                    input_im.save(os.path.join(out_path_coupled, 
-                        f"nnscore_{nn_scoring(ocr_recog_chars)}.png"))
+                    sequence_ocr_recog_chars.append(ocr_recog_chars)
 
-                    # eval
                     if opts.eval_data:
-                        top1_acc.append(top_char == extract_char_from_im_name(im_path))
+                        top1_acc.append(ocr_recog_chars[0] == extract_char_from_im_name(im_path))
                         top5_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars[:5])
                         top10_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars)
+
+                beam_output = beam_search_from_marginal_mlm(sequence_ocr_recog_chars, bertjapanese, bertjapanesetokenizer, beams=3)
+                print("Beam output: ")
+                print(beam_output)
 
             toc = time.time()
             global_time.append(toc - tic)
@@ -183,6 +177,26 @@ def main():
         print(f"Top-1 accuracy is {top1_acc}")
         print(f"Top-5 accuracy is {top5_acc}")
         print(f"Top-10 accuracy is {top10_acc}")
+
+
+def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn):
+
+    # viz results encoded
+    res = [np.array(input_im)]
+    res = res + [np.array(tensor2im(result_neighbors[i])) for i in range(opts.n_neighbors)]
+    res = np.concatenate(res, axis=1)
+    Image.fromarray(res).save(os.path.join(out_path_coupled, os.path.basename(im_path)))
+
+    # viz results wrt src file
+    res = [np.array(input_im)]
+    res = res + [np.array(Image.open(i).convert('RGB')) for i in bimgn]
+    res = np.concatenate(res, axis=1)
+    Image.fromarray(res).save(os.path.join(out_path_coupled, f"src_im_{os.path.basename(im_path)}"))
+
+    # ocr top1 save
+    top_char = extract_char_from_im_name(bimgn[0])
+    input_im.save(os.path.join(out_path_coupled, 
+        f"top1_{top_char}.png"))
 
 
 def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
