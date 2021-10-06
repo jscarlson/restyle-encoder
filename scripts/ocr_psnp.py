@@ -136,7 +136,7 @@ def main():
                     im_path = input_paths[bidx]
                     input_im = tensor2im(input_batch[bidx])
 
-                    viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn)
+                    viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn, opts)
 
                     ocr_recog_chars = [extract_char_from_im_name(imgn) for imgn in bimgn]
                     sequence_ocr_recog_chars.append(ocr_recog_chars)
@@ -179,7 +179,7 @@ def main():
         print(f"Top-10 accuracy is {top10_acc}")
 
 
-def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn):
+def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn, opts):
 
     # viz results encoded
     res = [np.array(input_im)]
