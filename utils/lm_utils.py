@@ -22,8 +22,12 @@ def subset_mlm(sequence, candidates, model, tokenizer):
 
 def beam_search_from_marginal_mlm(candidate_chars, model, tokenizer, beams=3):
 
-  candidate_chars = [list(set(candidates)) for candidates in candidate_chars]
+  def unique_ordered(seq):
+    seen = set()
+    seen_add = seen.add
+    return [x for x in seq if not (x in seen or seen_add(x))]
 
+  candidate_chars = [unique_ordered(c) for c in candidate_chars]
   sequences = [(c, 0.0) for c in candidate_chars[0]]
   candidate_chars = candidate_chars[1:]
 
