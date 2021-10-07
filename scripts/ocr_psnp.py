@@ -55,15 +55,21 @@ def main():
         transform=transforms_dict['transform_inference'],
         opts=opts
     )
+    """
     dataloader = DataLoader(
         dataset,
         batch_size=opts.test_batch_size,
         shuffle=True,
         num_workers=int(opts.test_workers),
-        drop_last=True,
-        batch_sampler=SeqSampler(dataset.seq_ids)
+        drop_last=True
     )
-
+    """
+    dataloader = DataLoader(
+        dataset,
+        batch_sampler=SeqSampler(dataset.seq_ids),
+        num_workers=int(opts.test_workers)
+    )
+    
     # n images to generate
     if opts.n_images is None:
         opts.n_images = len(dataset)
