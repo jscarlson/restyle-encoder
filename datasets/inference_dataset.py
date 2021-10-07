@@ -38,7 +38,7 @@ class InferenceDatasetWithPath(Dataset):
 
 	def __getitem__(self, index):
 		from_path = self.paths[index]
-		from_im = Image.open(from_path).convert('RGB')
+		from_im = Image.open(from_path).convert('RGB').resize((64,64))
 		if self.transform:
 			from_im = self.transform(from_im)
 		return from_im, from_path
