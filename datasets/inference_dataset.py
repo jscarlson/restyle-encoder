@@ -29,7 +29,7 @@ class InferenceDatasetWithPath(Dataset):
 
 	def __init__(self, root, opts, transform=None):
 		self.paths = sorted(data_utils.make_dataset(root))
-		self.seq_ids = [(path, [int(x[1:]) for x in os.path.basename(path).split('_')]) for path in self.paths]
+		self.seq_ids = [(path, self.extract_id(path)) for path in self.paths]
 		self.transform = transform
 		self.opts = opts
 
@@ -42,6 +42,10 @@ class InferenceDatasetWithPath(Dataset):
 		if self.transform:
 			from_im = self.transform(from_im)
 		return from_im, from_path
+
+	@staticmethod
+	def extract_id(path):
+		return [int(x[1:]) for x in os.path.splitext(os.path.basename(path))[0].split('_')]
 
 
 class SeqSampler:
