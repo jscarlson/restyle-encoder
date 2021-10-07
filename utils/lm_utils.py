@@ -17,6 +17,9 @@ def subset_mlm(sequence, candidates, model, tokenizer):
 
   sorted_out = [(tokenizer.decode([t]), p) for t, p in sorted(zip(token_subset, probs_subset), key=lambda x: x[1], reverse=True)]
   sorted_out_no_unk = [x for x in sorted_out if x[0] != tokenizer.unk_token]
+
+  assert len(sorted_out_no_unk) > 0, "All token candidates tokenized as UNK!"
+
   return sorted_out_no_unk
 
 
