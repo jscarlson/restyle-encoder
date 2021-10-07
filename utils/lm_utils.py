@@ -45,6 +45,7 @@ def beam_search_from_marginal_mlm(candidate_chars, model, tokenizer, beams=3):
 
     ordered = sorted(all_candidates, key=lambda x: x[1])
     sequences = ordered[:beams]
+    print(sequences)
 
   return sequences
 
