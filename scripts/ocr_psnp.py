@@ -159,7 +159,7 @@ def main():
                     beams=opts.n_beams
                 )
 
-                print("***")
+                print("***\n\n\n***\n\n")
                 print(input_paths)
                 print(sequence_ocr_recog_chars)
                 print(beam_output)

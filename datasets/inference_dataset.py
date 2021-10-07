@@ -58,5 +58,5 @@ class SeqSampler:
 		for seq_id in sorted(self.seq_ids, key=lambda x: x[1][-1]):
 			res_dict['-'.join(str(i) for i in seq_id[1][:2])].append(seq_id[0])
 		res = [v for k, v in res_dict.items()]
-		random.shuffle(res)
+		# random.shuffle(res)
 		return iter(res)
