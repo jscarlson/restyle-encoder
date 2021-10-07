@@ -153,7 +153,11 @@ def main():
                         top5_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars[:5])
                         top10_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars)
 
-                beam_output = beam_search_from_marginal_mlm(sequence_ocr_recog_chars, bertjapanese, bertjapanesetokenizer, beams=5)
+                beam_output = beam_search_from_marginal_mlm(
+                    sequence_ocr_recog_chars, 
+                    bertjapanese, bertjapanesetokenizer, 
+                    beams=opts.n_beams
+                )
 
                 print("***")
                 print(input_paths)
