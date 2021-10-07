@@ -14,7 +14,7 @@ sys.path.append(".")
 sys.path.append("..")
 
 from configs import data_configs
-from datasets.inference_dataset import InferenceDatasetWithPath
+from datasets.inference_dataset import InferenceDatasetWithPath, SeqSampler
 from options.test_options import TestOptions
 from models.psp import pSp
 from models.e4e import e4e
@@ -60,7 +60,8 @@ def main():
         batch_size=opts.test_batch_size,
         shuffle=True,
         num_workers=int(opts.test_workers),
-        drop_last=True
+        drop_last=True,
+        batch_sampler=SeqSampler(dataset.seq_ids)
     )
 
     # n images to generate
@@ -95,6 +96,8 @@ def main():
         
     # inference
     for input_batch, input_paths in tqdm(dataloader):
+
+        print(input_paths)
 
         if global_i >= opts.n_images:
             break
