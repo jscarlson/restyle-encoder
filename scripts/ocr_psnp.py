@@ -91,8 +91,8 @@ def main():
         
     # read in lm
     if not opts.save_latents:
-        bertjapanese = AutoModelForMaskedLM.from_pretrained('cl-tohoku/bert-base-japanese-char-v2')
-        bertjapanesetokenizer = BertJapaneseTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char-v2")
+        bertjapanese = AutoModelForMaskedLM.from_pretrained('cl-tohoku/bert-base-japanese-char')
+        bertjapanesetokenizer = BertJapaneseTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char")
 
     # setup eval
     if opts.eval_data:
