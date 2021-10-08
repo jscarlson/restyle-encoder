@@ -57,6 +57,6 @@ def beam_search_from_marginal_mlm(candidate_chars, model, tokenizer, beams=3):
 
 if __name__ == '__main__':
 
-    model = AutoModelForMaskedLM.from_pretrained('cl-tohoku/bert-base-japanese-char-v2')
-    tokenizer = BertJapaneseTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char-v2")
+    model = AutoModelForMaskedLM.from_pretrained('cl-tohoku/bert-base-japanese-char')
+    tokenizer = BertJapaneseTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char")
     beam_search_from_marginal_mlm(["人入天", "事亊庸", "課註許", "長畏艮果"], model, tokenizer, beams=2)

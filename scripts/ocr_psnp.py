@@ -94,6 +94,11 @@ def main():
         bertjapanese = AutoModelForMaskedLM.from_pretrained('cl-tohoku/bert-base-japanese-char')
         bertjapanesetokenizer = BertJapaneseTokenizer.from_pretrained("cl-tohoku/bert-base-japanese-char")
 
+    # pca
+    if opts.pca is not None:
+        lat_comp = np.load(opts.pca)["lat_comp"]
+        first_four_lat_comp = np.squeeze(lat_comp[:4,:,:], axis=1)
+
     # setup eval
     if opts.eval_data:
         top1_acc = []
@@ -213,7 +218,7 @@ def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn, op
         f"top1_{top_char}.png"))
 
 
-def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
+def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10, pcomp=None):
 
     # create index
     index = faiss.IndexFlatIP(dim)
@@ -232,7 +237,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
         saved_latents = np.load(os.path.join(root_dir, filename))
         all_arrays[idx:idx+opts.test_batch_size,:,:] = saved_latents
 
-        reshaped_latents = reshape_latent(saved_latents, n_latents, np.mean)
+        reshaped_latents = embed_latent(saved_latents, n_latents, np.mean)
         faiss.normalize_L2(reshaped_latents)
         index.add(reshaped_latents)
 
@@ -243,10 +248,10 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10):
     return index, all_arrays, all_paths
 
 
-def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True):
+def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True, pcomp=None):
     
     # search index
-    reshaped_query_latents = reshape_latent(query_latents, n_latents, np.mean)
+    reshaped_query_latents = embed_latent(query_latents, n_latents, np.mean)
     D, I = index.search(reshaped_query_latents, n_neighbors)
     if verbose:
         print(I)
@@ -260,12 +265,22 @@ def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neigh
     return closest_codes, closest_im_names
 
 
-def reshape_latent(latents, n_latents, agg_func):
+def embed_latent(latents, n_latents, agg_func, pcomp=None):
+
     if torch.is_tensor(latents):
         latents = latents.cpu().detach().numpy()
-    return np.ascontiguousarray(
-        agg_func(latents[:,:n_latents,:], axis=1).reshape((latents.shape[0], -1))
-    )
+        print(latents.shape)
+
+    if pcomp is None:
+
+        embedding = np.ascontiguousarray(
+            agg_func(latents[:,:n_latents,:], axis=1).reshape((latents.shape[0], -1))
+        )
+
+    else:
+        raise NotImplementedError
+
+    return embedding
 
 
 def run_on_batch(inputs, net, opts, avg_image, just_decode=False):
