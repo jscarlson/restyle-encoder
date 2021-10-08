@@ -269,7 +269,8 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
 
     if torch.is_tensor(latents):
         latents = latents.cpu().detach().numpy()
-        print(latents.shape)
+
+    print(latents.shape)
 
     if pcomp is None:
 
