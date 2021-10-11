@@ -235,7 +235,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pco
 
     # create index
     if opts.pca:
-        index = faiss.IndexFlatIP(n_latents*4)
+        index = faiss.IndexFlatIP(n_latents*pcomp.shape[0])
     elif agg_func is np.mean:
         index = faiss.IndexFlatIP(ldim)
     elif agg_func is np.sum:
