@@ -188,8 +188,7 @@ def main():
     if opts.save_latents:
         index, lookup_arrays, ord_batch_paths = setup_faiss(
             opts, batch_input_paths, 
-            n_latents=opts.n_latents, n_imgs=global_i, pcomp=first_four_lat_comp,
-            edim=40 if opts.pca else 512
+            n_latents=opts.n_latents, n_imgs=global_i, pcomp=first_four_lat_comp
         )
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:
@@ -232,10 +231,10 @@ def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn, op
         f"top1_{top_char}.png"))
 
 
-def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, edim=512, ldim=512, wplus=10, pcomp=None):
+def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pcomp=None):
 
     # create index
-    index = faiss.IndexFlatIP(edim)
+    index = faiss.IndexFlatIP(n_latents*4)
     all_arrays = np.empty((n_imgs, wplus, ldim), dtype=np.float32)
     all_paths = []
 
