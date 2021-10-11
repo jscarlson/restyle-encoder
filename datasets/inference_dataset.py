@@ -27,9 +27,10 @@ class InferenceDataset(Dataset):
 
 class InferenceDatasetWithPath(Dataset):
 
-	def __init__(self, root, opts, transform=None):
+	def __init__(self, root, opts, transform=None, seq_ids=False):
 		self.paths = sorted(data_utils.make_dataset(root))
-		self.seq_ids = [(idx, self.extract_id(path)) for idx, path in enumerate(self.paths)]
+		if seq_ids:
+			self.seq_ids = [(idx, self.extract_id(path)) for idx, path in enumerate(self.paths)]
 		self.transform = transform
 		self.opts = opts
 

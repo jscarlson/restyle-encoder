@@ -50,13 +50,13 @@ def main():
     print('Loading dataset for {}'.format(opts.dataset_type))
     dataset_args = data_configs.DATASETS[opts.dataset_type]
     transforms_dict = dataset_args['transforms'](opts).get_transforms()
-    dataset = InferenceDatasetWithPath(
-        root=opts.data_path,
-        transform=transforms_dict['transform_inference'],
-        opts=opts
-    )
     
     if opts.save_latents:
+        dataset = InferenceDatasetWithPath(
+            root=opts.data_path,
+            transform=transforms_dict['transform_inference'],
+            opts=opts
+        )
         dataloader = DataLoader(
             dataset,
             batch_size=opts.test_batch_size,
@@ -65,6 +65,12 @@ def main():
             drop_last=True
         )
     else:
+        dataset = InferenceDatasetWithPath(
+            root=opts.data_path,
+            transform=transforms_dict['transform_inference'],
+            opts=opts,
+            seq_ids=True
+        )
         dataloader = DataLoader(
             dataset,
             batch_sampler=SeqSampler(dataset.seq_ids),
