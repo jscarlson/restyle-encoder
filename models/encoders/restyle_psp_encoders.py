@@ -91,3 +91,35 @@ class ResNetBackboneEncoder(Module):
             latents.append(self.styles[j](x))
         out = torch.stack(latents, dim=1)
         return out
+
+
+class ResNetBackboneIntoW(Module):
+    def __init__(self, opts=None):
+        super(ResNetBackboneIntoW, self).__init__()
+
+        self.conv1 = nn.Conv2d(opts.input_nc, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.bn1 = BatchNorm2d(64)
+        self.relu = PReLU(64)
+
+        resnet_basenet = resnet34(pretrained=True)
+        blocks = [
+            resnet_basenet.layer1,
+            resnet_basenet.layer2,
+            resnet_basenet.layer3,
+            resnet_basenet.layer4
+        ]
+        modules = []
+        for block in blocks:
+            for bottleneck in block:
+                modules.append(bottleneck)
+        self.body = Sequential(*modules)
+        self.style = GradualStyleBlock(512, 512, 16)
+
+    def forward(self, x):
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.body(x)
+        latent = self.style(x)
+        out = latent
+        return out

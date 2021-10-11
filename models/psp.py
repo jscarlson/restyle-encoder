@@ -33,6 +33,8 @@ class pSp(nn.Module):
             encoder = restyle_psp_encoders.BackboneEncoder(50, 'ir_se', self.n_styles, self.opts)
         elif self.opts.encoder_type == 'ResNetBackboneEncoder':
             encoder = restyle_psp_encoders.ResNetBackboneEncoder(self.n_styles, self.opts)
+        elif self.opts.encoder_type == 'ResNetBackboneIntoW':
+            encoder = restyle_psp_encoders.ResNetBackboneIntoW(self.opts)
         else:
             raise Exception(f'{self.opts.encoder_type} is not a valid encoders')
         return encoder
