@@ -298,7 +298,7 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
 
         embedding = np.ascontiguousarray(
             embedding[:,:,:n_latents].reshape((latents.shape[0], -1))
-        )
+        ).astype('float32')
 
     return embedding
 
