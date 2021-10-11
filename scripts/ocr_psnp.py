@@ -98,6 +98,8 @@ def main():
     if opts.pca is not None:
         lat_comp = np.load(opts.pca)["lat_comp"]
         first_four_lat_comp = np.squeeze(lat_comp[:4,:,:], axis=1)
+    else:
+        first_four_lat_comp = None
 
     # setup eval
     if opts.eval_data:
@@ -135,7 +137,8 @@ def main():
                     im_names,
                     n_latents=opts.n_latents, 
                     n_neighbors=opts.n_neighbors,
-                    verbose=opts.verbose
+                    verbose=opts.verbose,
+                    pcomp=first_four_lat_comp
                 )
 
                 sequence_ocr_recog_chars = []
@@ -176,7 +179,7 @@ def main():
 
     # faiss index creation
     if opts.save_latents:
-        index, lookup_arrays, ord_batch_paths = setup_faiss(opts, batch_input_paths, n_latents=opts.n_latents, n_imgs=global_i)
+        index, lookup_arrays, ord_batch_paths = setup_faiss(opts, batch_input_paths, n_latents=opts.n_latents, n_imgs=global_i, pcomp=first_four_lat_comp)
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:
             np.save(f, lookup_arrays)
@@ -237,7 +240,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10, pcom
         saved_latents = np.load(os.path.join(root_dir, filename))
         all_arrays[idx:idx+opts.test_batch_size,:,:] = saved_latents
 
-        reshaped_latents = embed_latent(saved_latents, n_latents, np.mean)
+        reshaped_latents = embed_latent(saved_latents, n_latents, np.mean, pcomp)
         faiss.normalize_L2(reshaped_latents)
         index.add(reshaped_latents)
 
@@ -251,7 +254,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10, pcom
 def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True, pcomp=None):
     
     # search index
-    reshaped_query_latents = embed_latent(query_latents, n_latents, np.mean)
+    reshaped_query_latents = embed_latent(query_latents, n_latents, np.mean, pcomp)
     D, I = index.search(reshaped_query_latents, n_neighbors)
     if verbose:
         print(I)
@@ -268,9 +271,7 @@ def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neigh
 def embed_latent(latents, n_latents, agg_func, pcomp=None):
 
     if torch.is_tensor(latents):
-        latents = latents.cpu().detach().numpy()
-
-    print(latents.shape)
+        latents = latents.cpu().detach().numpy() # eg (2, 10, 512)
 
     if pcomp is None:
 
@@ -279,7 +280,18 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
         )
 
     else:
-        raise NotImplementedError
+
+        embedding = np.empty((latents.shape[0], pcomp.shape[1], latents.shape[-1]))
+
+        for i in latents.shape[0]:
+
+            latent = latents[i,:,:].T
+            proj = pcomp @ latent
+            embedding[i,:,:] = proj
+
+        embedding = np.ascontiguousarray(
+            embedding.reshape((latents.shape[0], -1))
+        )
 
     return embedding
 
