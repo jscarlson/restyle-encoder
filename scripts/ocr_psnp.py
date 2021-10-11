@@ -234,7 +234,7 @@ def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn, op
 def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pcomp=None):
 
     # create index
-    index = faiss.IndexFlatIP(n_latents*4)
+    index = faiss.IndexFlatIP(n_latents*4 if opts.pca else ldim)
     all_arrays = np.empty((n_imgs, wplus, ldim), dtype=np.float32)
     all_paths = []
 
