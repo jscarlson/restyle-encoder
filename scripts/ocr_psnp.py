@@ -281,7 +281,7 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
 
     else:
 
-        embedding = np.empty((latents.shape[0], pcomp.shape[0], latents.shape[-1]))
+        embedding = np.empty((latents.shape[0], pcomp.shape[0], pcomp.shape[-1]))
 
         for i in range(latents.shape[0]):
 
