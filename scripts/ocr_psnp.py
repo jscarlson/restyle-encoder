@@ -231,10 +231,16 @@ def viz_results(input_im, result_neighbors, out_path_coupled, im_path, bimgn, op
         f"top1_{top_char}.png"))
 
 
-def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pcomp=None):
+def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pcomp=None, agg_func=np.mean):
 
     # create index
-    index = faiss.IndexFlatIP(n_latents*4 if opts.pca else ldim)
+    if opts.pca:
+        index = faiss.IndexFlatIP(n_latents*4)
+    elif agg_func is np.mean:
+        index = faiss.IndexFlatIP(ldim)
+    elif agg_func is np.sum:
+        index = faiss.IndexFlatIP(ldim)
+        
     all_arrays = np.empty((n_imgs, wplus, ldim), dtype=np.float32)
     all_paths = []
 
@@ -250,7 +256,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pco
         saved_latents = np.load(os.path.join(root_dir, filename))
         all_arrays[idx:idx+opts.test_batch_size,:,:] = saved_latents
 
-        reshaped_latents = embed_latent(saved_latents, n_latents, np.mean, pcomp)
+        reshaped_latents = embed_latent(saved_latents, n_latents, agg_func, pcomp)
         faiss.normalize_L2(reshaped_latents)
         index.add(reshaped_latents)
 
@@ -261,10 +267,10 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, ldim=512, wplus=10, pco
     return index, all_arrays, all_paths
 
 
-def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True, pcomp=None):
+def run_faiss(query_latents, index, all_arrays, all_im_names, n_latents, n_neighbors=5, verbose=True, pcomp=None, agg_func=np.mean):
     
     # search index
-    reshaped_query_latents = embed_latent(query_latents, n_latents, np.mean, pcomp)
+    reshaped_query_latents = embed_latent(query_latents, n_latents, agg_func, pcomp)
     D, I = index.search(reshaped_query_latents, n_neighbors)
     if verbose:
         print(I)
