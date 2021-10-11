@@ -297,7 +297,7 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
             embedding[i,:,:] = proj
 
         embedding = np.ascontiguousarray(
-            embedding.reshape((latents.shape[0], -1))
+            embedding[:,:,:n_latents].reshape((latents.shape[0], -1))
         )
 
     return embedding
