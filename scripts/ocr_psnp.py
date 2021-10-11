@@ -249,6 +249,7 @@ def setup_faiss(opts, batch_im_paths, n_latents, n_imgs, dim=512, wplus=10, pcom
 
         reshaped_latents = embed_latent(saved_latents, n_latents, np.mean, pcomp)
         faiss.normalize_L2(reshaped_latents)
+        print(reshaped_latents.shape)
         index.add(reshaped_latents)
 
         idx += opts.test_batch_size
@@ -299,8 +300,6 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
         embedding = np.ascontiguousarray(
             embedding.reshape((latents.shape[0], -1))
         )
-
-        print(embedding.shape)
 
     return embedding
 
