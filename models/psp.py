@@ -52,7 +52,10 @@ class pSp(nn.Module):
             print(f'Loading decoder weights from pretrained path: {self.opts.stylegan_weights}')
             ckpt = torch.load(self.opts.stylegan_weights)
             self.decoder.load_state_dict(ckpt['g_ema'], strict=True)
-            self.__load_latent_avg(ckpt, repeat=self.n_styles)
+            if self.opts.encoder_type == 'ResNetBackboneIntoW':
+                self.__load_latent_avg(ckpt, repeat=1)
+            else:
+                self.__load_latent_avg(ckpt, repeat=self.n_styles)
 
     def forward(self, x, latent=None, resize=False, latent_mask=None, input_code=False, randomize_noise=True,
                 inject_latent=None, return_latents=False, alpha=None, average_code=False, input_is_full=False):
@@ -67,6 +70,11 @@ class pSp(nn.Module):
             else:
                 # first iteration is with respect to the avg latent code
                 codes = codes + self.latent_avg.repeat(codes.shape[0], 1, 1)
+
+                if self.opts.encoder_type == 'ResNetBackboneIntoW':
+                    codes = codes + self.latent_avg.repeat(codes.shape[0], 1)
+                else:
+                    codes = codes + self.latent_avg.repeat(codes.shape[0], 1, 1)
 
         if latent_mask is not None:
             for i in latent_mask:
