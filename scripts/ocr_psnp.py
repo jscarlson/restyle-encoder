@@ -81,6 +81,12 @@ def main():
     if opts.n_images is None:
         opts.n_images = len(dataset)
 
+    # agg
+    if opts.agg == 'avg':
+        agg = np.mean
+    elif opts.agg == 'sum':
+        agg = np.sum
+
     # get the image corresponding to the latent average
     avg_image = get_average_image(net, opts)
 
@@ -145,7 +151,8 @@ def main():
                     n_latents=opts.n_latents, 
                     n_neighbors=opts.n_neighbors,
                     verbose=opts.verbose,
-                    pcomp=first_four_lat_comp
+                    pcomp=first_four_lat_comp,
+                    agg_func=agg
                 )
 
                 sequence_ocr_recog_chars = []
@@ -188,7 +195,9 @@ def main():
     if opts.save_latents:
         index, lookup_arrays, ord_batch_paths = setup_faiss(
             opts, batch_input_paths, 
-            n_latents=opts.n_latents, n_imgs=global_i, pcomp=first_four_lat_comp
+            n_latents=opts.n_latents, n_imgs=global_i, 
+            pcomp=first_four_lat_comp,
+            agg_func=agg
         )
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:

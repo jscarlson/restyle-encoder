@@ -38,6 +38,7 @@ class TestOptions:
         # PSNP
         self.parser.add_argument('--faiss_dir', type=str, default=None, required=True, help='Path to NPY files for FAISS')
         self.parser.add_argument('--pca', type=str, default=None, help='Path to PCA npz')
+        self.parser.add_argument('--agg', type=str, default='avg', help='Aggregation function for non-PCA embeddings')
         self.parser.add_argument('--save_latents', action='store_true', help='Save latents for nearest neighbors comparisons')
         self.parser.add_argument('--save_images', action='store_true', help='Save images')
         self.parser.add_argument('--n_latents', default=5, type=int, help='Number of W+ vectors to concat for FAISS')
