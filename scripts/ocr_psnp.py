@@ -186,7 +186,11 @@ def main():
 
     # faiss index creation
     if opts.save_latents:
-        index, lookup_arrays, ord_batch_paths = setup_faiss(opts, batch_input_paths, n_latents=opts.n_latents, n_imgs=global_i, pcomp=first_four_lat_comp)
+        index, lookup_arrays, ord_batch_paths = setup_faiss(
+            opts, batch_input_paths, 
+            n_latents=opts.n_latents, n_imgs=global_i, pcomp=first_four_lat_comp,
+            dim=40 if opts.pca else 512
+        )
         faiss.write_index(index, os.path.join(opts.faiss_dir, 'index.bin'))
         with open(os.path.join(opts.faiss_dir, 'lookup_array.npy'), 'wb') as f:
             np.save(f, lookup_arrays)
