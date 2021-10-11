@@ -283,7 +283,7 @@ def embed_latent(latents, n_latents, agg_func, pcomp=None):
 
         embedding = np.empty((latents.shape[0], pcomp.shape[1], latents.shape[-1]))
 
-        for i in latents.shape[0]:
+        for i in range(latents.shape[0]):
 
             latent = latents[i,:,:].T
             proj = pcomp @ latent
