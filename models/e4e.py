@@ -20,7 +20,7 @@ class e4e(nn.Module):
         # Define architecture
         self.encoder = self.set_encoder()
         self.decoder = Generator(self.opts.output_size, 512, 8, channel_multiplier=2)
-        # self.face_pool = torch.nn.AdaptiveAvgPool2d((256, 256))
+        self.face_pool = torch.nn.AdaptiveAvgPool2d((256, 256))
         # Load weights if needed
         self.load_weights()
 
@@ -48,7 +48,7 @@ class e4e(nn.Module):
             self.decoder.load_state_dict(ckpt['g_ema'], strict=True)
             self.__load_latent_avg(ckpt, repeat=self.n_styles)
 
-    def forward(self, x, latent=None, resize=True, latent_mask=None, input_code=False, randomize_noise=True,
+    def forward(self, x, latent=None, resize=False, latent_mask=None, input_code=False, randomize_noise=True,
                 inject_latent=None, return_latents=False, alpha=None, average_code=False, input_is_full=False):
         if input_code:
             codes = x
@@ -72,13 +72,15 @@ class e4e(nn.Module):
                 else:
                     codes[:, i] = 0
 
+        """
         if average_code:
             input_is_latent = True
         else:
             input_is_latent = (not input_code) or (input_is_full)
+        """
 
         images, result_latent = self.decoder([codes],
-                                             input_is_latent=input_is_latent,
+                                             input_is_latent=True,
                                              randomize_noise=randomize_noise,
                                              return_latents=return_latents)
 
