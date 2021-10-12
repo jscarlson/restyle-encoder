@@ -13,7 +13,7 @@ def subset_mlm(sequence, candidates, model, tokenizer):
   mask_token_probs = token_logits[0, mask_token_index, :].softmax(1)
 
   print(candidates)
-  token_subset = tokenizer(candidates, return_tensors="pt")['input_ids'][0].tolist()[1:-1]
+  token_subset = [tokenizer(candidate, return_tensors="pt")['input_ids'][0].tolist()[1:-1][0] for candidate in candidates]
   print(token_subset)
   probs_subset = mask_token_probs[:,token_subset][0].tolist()
   print(probs_subset)
