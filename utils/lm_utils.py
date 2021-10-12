@@ -12,18 +12,13 @@ def subset_mlm(sequence, candidates, model, tokenizer):
   token_logits = model(**inputs).logits
   mask_token_probs = token_logits[0, mask_token_index, :].softmax(1)
 
-  print(candidates)
   token_subset = [tokenizer(candidate, return_tensors="pt")['input_ids'][0].tolist()[1:-1][0] for candidate in candidates]
-  print(token_subset)
   probs_subset = mask_token_probs[:,token_subset][0].tolist()
-  print(probs_subset)
 
   sorted_out = [(tokenizer.decode([t]), p) for t, p in sorted(zip(token_subset, probs_subset), key=lambda x: x[1], reverse=True)]
   sorted_out_no_unk = [x for x in sorted_out if x[0] != tokenizer.unk_token]
 
-  print(f"Sorted no unk: {sorted_out_no_unk}")
   assert len(sorted_out_no_unk) > 0, "All token candidates tokenized as UNK!"
-
   return sorted_out_no_unk
 
 
