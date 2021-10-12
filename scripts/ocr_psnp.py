@@ -121,7 +121,7 @@ def main():
         top10_acc = []
         
     # inference
-    for input_batch, input_paths in dataloader:
+    for input_batch, input_paths in tqdm(dataloader):
 
         if global_i >= opts.n_images:
             break
