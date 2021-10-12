@@ -175,6 +175,7 @@ def main():
                         top5_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars[:5])
                         top10_acc.append(extract_char_from_im_name(im_path) in ocr_recog_chars)
 
+                print(input_paths)
                 print(sequence_ocr_recog_chars)
                 beam_output = beam_search_from_marginal_mlm(
                     sequence_ocr_recog_chars, 
@@ -182,7 +183,7 @@ def main():
                     beams=opts.n_beams
                 )
                 print(beam_output)
-                print("***\n\n\n***\n\n")
+                print("***\n\n\n")
 
             toc = time.time()
             global_time.append(toc - tic)
