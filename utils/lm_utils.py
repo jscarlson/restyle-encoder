@@ -43,6 +43,7 @@ def beam_search_from_marginal_mlm(candidate_chars, model, tokenizer, beams=3):
       seq, score = sequences[j]
       try:
         preds = subset_mlm(seq, candidate_chars[i], model, tokenizer)
+        print(preds)
       except AssertionError:
         return None
       log_preds = [(t, np.log(p)) for t, p in preds]
