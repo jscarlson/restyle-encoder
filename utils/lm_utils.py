@@ -13,7 +13,9 @@ def subset_mlm(sequence, candidates, model, tokenizer):
   mask_token_probs = token_logits[0, mask_token_index, :].softmax(1)
 
   token_subset = tokenizer(candidates, return_tensors="pt")['input_ids'][0].tolist()[1:-1]
+  print(token_subset)
   probs_subset = mask_token_probs[:,token_subset][0].tolist()
+  print(probs_subset)
 
   sorted_out = [(tokenizer.decode([t]), p) for t, p in sorted(zip(token_subset, probs_subset), key=lambda x: x[1], reverse=True)]
   sorted_out_no_unk = [x for x in sorted_out if x[0] != tokenizer.unk_token]
@@ -43,7 +45,6 @@ def beam_search_from_marginal_mlm(candidate_chars, model, tokenizer, beams=3):
       seq, score = sequences[j]
       try:
         preds = subset_mlm(seq, candidate_chars[i], model, tokenizer)
-        print(preds)
       except AssertionError:
         return None
       log_preds = [(t, np.log(p)) for t, p in preds]
